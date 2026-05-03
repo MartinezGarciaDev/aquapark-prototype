@@ -24,11 +24,12 @@ public class AirborneDragGlider : MonoBehaviour
     [Header("Vertical Glide Control")]
     [SerializeField] private bool enableVerticalGlideControl = true;
     [SerializeField] private float screenHeightSwipePitchDegrees = 300f;
-    [SerializeField] private float maxPitchDegrees = 60f;
+    [SerializeField] private float maxPitchDownDegrees = 60f;
+    [SerializeField] private float maxPitchUpDegrees = 40f;
     [SerializeField] private bool pitchReturnsToNeutral = false;
     [SerializeField] private float pitchReturnSpeed = 60f;
-    [SerializeField] private float pitchDownForwardSpeedBonus = 4f;
-    [SerializeField] private float pitchUpForwardSpeedPenalty = 6f;
+    [SerializeField] private float pitchDownForwardSpeedMultiplier = 1.3f;
+    [SerializeField] private float pitchUpForwardSpeedMultiplier = 0.5f;
     [SerializeField] private float maxPitchDownGravityIncrease = 0.5f;
     [SerializeField] private float maxPitchUpGravityReduction = 2f;
     // X axis: normalized pitch (0 = neutral, 1 = max pitch up/down). Y axis: gravity influence factor (0 = no change, 1 = full effect of maxPitchUpGravityReduction / maxPitchDownGravityIncrease).
@@ -94,7 +95,7 @@ public class AirborneDragGlider : MonoBehaviour
 
         if (!isGrounded && enableVerticalGlideControl)
         {
-            float normalizedPitch = Mathf.Clamp01(Mathf.Abs(currentPitch) / maxPitchDegrees);
+            float normalizedPitch = Mathf.Clamp01(Mathf.Abs(currentPitch) / (currentPitch > 0f ? maxPitchDownDegrees : maxPitchUpDegrees));
             float gravityCurveValue = pitchToGravityCurve.Evaluate(normalizedPitch);
 
             if (currentPitch > 0f)
@@ -121,10 +122,13 @@ public class AirborneDragGlider : MonoBehaviour
 
         if (!isGrounded && enableVerticalGlideControl)
         {
+            float normalizedPitch = Mathf.Clamp01(Mathf.Abs(currentPitch) / (currentPitch > 0f ? maxPitchDownDegrees : maxPitchUpDegrees));
+            float speedCurveValue = pitchToGravityCurve.Evaluate(normalizedPitch);
+
             if (currentPitch > 0f)
-                activeForwardSpeed += pitchDownForwardSpeedBonus * (currentPitch / maxPitchDegrees);
+                activeForwardSpeed = forwardSpeed * Mathf.Lerp(1f, pitchDownForwardSpeedMultiplier, speedCurveValue);
             else if (currentPitch < 0f)
-                activeForwardSpeed -= pitchUpForwardSpeedPenalty * (-currentPitch / maxPitchDegrees);
+                activeForwardSpeed = forwardSpeed * Mathf.Lerp(1f, pitchUpForwardSpeedMultiplier, speedCurveValue);
         }
 
         // Move forward in Player root facing direction
@@ -174,7 +178,9 @@ public class AirborneDragGlider : MonoBehaviour
 
         if (!isGrounded && enableVerticalGlideControl && Mathf.Abs(pointerDelta.y) > 0.01f)
         {
-            currentPitch = Mathf.Clamp(currentPitch + pointerDelta.y * pitchDegreesPerPixel, -maxPitchDegrees, maxPitchDegrees);
+            float minPitch = -maxPitchUpDegrees;
+            float maxPitch = maxPitchDownDegrees;
+            currentPitch = Mathf.Clamp(currentPitch + pointerDelta.y * pitchDegreesPerPixel, minPitch, maxPitch);
         }
         else if (pitchReturnsToNeutral && enableVerticalGlideControl)
         {
