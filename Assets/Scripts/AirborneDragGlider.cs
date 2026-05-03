@@ -6,7 +6,7 @@ using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 public class AirborneDragGlider : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Rigidbody rb; // Rigidbody on PlayerCapsule
+    [SerializeField] private Rigidbody rb; // Rigidbody on Player root
     [SerializeField] private Transform playerCapsule;
 
     [Header("Movement")]
@@ -49,14 +49,14 @@ public class AirborneDragGlider : MonoBehaviour
     {
         if (rb == null)
         {
-            Debug.LogError("Rigidbody not assigned");
+            Debug.LogError("Rigidbody not assigned on Player root");
             return;
         }
 
         rb.freezeRotation = true;
 
         if (playerCapsule == null)
-            playerCapsule = rb.transform;
+            Debug.LogError("PlayerCapsule not assigned");
 
         capsuleLocalRotation = playerCapsule.localRotation;
 
@@ -81,13 +81,13 @@ public class AirborneDragGlider : MonoBehaviour
         currentYaw += steerInput * yawSpeed * Time.fixedDeltaTime;
 
         // Rotate the Player root for gameplay heading
-        transform.rotation = Quaternion.Euler(0f, currentYaw, 0f);
+        rb.MoveRotation(Quaternion.Euler(0f, currentYaw, 0f));
 
         // Keep the capsule using its original local visual rotation
         playerCapsule.localRotation = capsuleLocalRotation;
 
         // Move forward in Player root facing direction
-        Vector3 velocity = transform.forward * forwardSpeed;
+        Vector3 velocity = rb.transform.forward * forwardSpeed;
         velocity.y = rb.linearVelocity.y;
 
         rb.linearVelocity = velocity;
@@ -124,7 +124,7 @@ public class AirborneDragGlider : MonoBehaviour
     private void CheckGrounded()
     {
         isGrounded = Physics.Raycast(
-            playerCapsule.position,
+            rb.position,
             Vector3.down,
             groundCheckDistance,
             groundMask
@@ -136,8 +136,8 @@ public class AirborneDragGlider : MonoBehaviour
         if (cameraTransform == null || rb == null)
             return;
 
-        cameraOffset = Quaternion.Inverse(transform.rotation) * (cameraTransform.position - playerCapsule.position);
-        cameraRotationOffset = Quaternion.Inverse(transform.rotation) * cameraTransform.rotation;
+        cameraOffset = Quaternion.Inverse(rb.rotation) * (cameraTransform.position - rb.position);
+        cameraRotationOffset = Quaternion.Inverse(rb.rotation) * cameraTransform.rotation;
     }
 
     private void UpdateCamera()
@@ -145,8 +145,8 @@ public class AirborneDragGlider : MonoBehaviour
         if (cameraTransform == null || rb == null)
             return;
 
-        Vector3 targetPosition = playerCapsule.position + transform.rotation * cameraOffset;
-        Quaternion targetRotation = transform.rotation * cameraRotationOffset;
+        Vector3 targetPosition = rb.position + rb.rotation * cameraOffset;
+        Quaternion targetRotation = rb.rotation * cameraRotationOffset;
 
         cameraTransform.position = targetPosition;
         cameraTransform.rotation = targetRotation;
