@@ -15,9 +15,9 @@ public class AirborneDragGlider : MonoBehaviour
     [SerializeField] private float glideGravityMultiplier = 0.35f;
 
     [Header("Drag Control")]
-    [SerializeField] private float dragSensitivity = 0.02f;
-    [SerializeField] private float maxSteerInput = 1f;
-    [SerializeField] private float steerReturnSpeed = 6f;
+    [SerializeField] private float screenWidthSwipeDegrees = 180f;
+    [SerializeField] private bool holdKeepsTurning = true;
+    [SerializeField] private float holdDelay = 0.2f;
 
     [Header("Camera")]
     [SerializeField] private Transform cameraTransform;
@@ -30,10 +30,12 @@ public class AirborneDragGlider : MonoBehaviour
     [SerializeField] private float groundCheckDistance = 0.7f;
     [SerializeField] private LayerMask groundMask = ~0;
 
-    private float steerInput;
     private float currentYaw;
     private bool isGrounded;
     private Quaternion capsuleLocalRotation;
+    private float lastDeltaX;
+    private float timeSinceLastDragMovement;
+    private bool pointerHeld;
 
     private void OnEnable()
     {
@@ -77,9 +79,6 @@ public class AirborneDragGlider : MonoBehaviour
             rb.AddForce(Physics.gravity * (glideGravityMultiplier - 1f), ForceMode.Acceleration);
         }
 
-        // Accumulate yaw
-        currentYaw += steerInput * yawSpeed * Time.fixedDeltaTime;
-
         // Rotate the Player root for gameplay heading
         rb.MoveRotation(Quaternion.Euler(0f, currentYaw, 0f));
 
@@ -100,26 +99,52 @@ public class AirborneDragGlider : MonoBehaviour
 
     private void ReadDragInput()
     {
-        float targetInput = 0f;
+        bool isPointerDown = TryGetPointerDelta(out Vector2 pointerDelta);
+        float degreesPerPixel = screenWidthSwipeDegrees / Screen.width;
 
+        if (!isPointerDown)
+        {
+            pointerHeld = false;
+            lastDeltaX = 0f;
+            timeSinceLastDragMovement = 0f;
+            return;
+        }
+
+        pointerHeld = true;
+
+        if (Mathf.Abs(pointerDelta.x) > 0.01f)
+        {
+            lastDeltaX = pointerDelta.x;
+            timeSinceLastDragMovement = 0f;
+            currentYaw += pointerDelta.x * degreesPerPixel;
+        }
+        else
+        {
+            timeSinceLastDragMovement += Time.deltaTime;
+
+            if (holdKeepsTurning && timeSinceLastDragMovement >= holdDelay)
+                currentYaw += lastDeltaX * degreesPerPixel;
+        }
+    }
+
+    private bool TryGetPointerDelta(out Vector2 pointerDelta)
+    {
         if (Touch.activeTouches.Count > 0)
         {
-            var touch = Touch.activeTouches[0];
-            targetInput = touch.delta.x * dragSensitivity;
+            pointerDelta = Touch.activeTouches[0].delta;
+            return true;
         }
-        else if (Mouse.current != null && Mouse.current.leftButton.isPressed)
+
+        if (Mouse.current != null && Mouse.current.leftButton.isPressed)
         {
-            targetInput = Mouse.current.delta.ReadValue().x * dragSensitivity;
+            pointerDelta = Mouse.current.delta.ReadValue();
+            return true;
         }
 
-        targetInput = Mathf.Clamp(targetInput, -maxSteerInput, maxSteerInput);
-
-        steerInput = Mathf.Lerp(
-            steerInput,
-            targetInput,
-            Time.deltaTime * steerReturnSpeed
-        );
+        pointerDelta = default;
+        return false;
     }
+
 
     private void CheckGrounded()
     {
