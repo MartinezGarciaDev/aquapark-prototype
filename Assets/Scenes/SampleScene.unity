@@ -489,8 +489,8 @@ Transform:
   m_GameObject: {fileID: 779888591}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.70710576, z: 0, w: 0.7071079}
-  m_LocalPosition: {x: 0, y: -230, z: 134}
-  m_LocalScale: {x: 261.27, y: 2.016, z: 25.089954}
+  m_LocalPosition: {x: 0, y: -82, z: 87}
+  m_LocalScale: {x: 170.70598, y: 12.9058275, z: 25.089954}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -763,7 +763,7 @@ Transform:
   m_GameObject: {fileID: 1346931447}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.0000018179417}
-  m_LocalPosition: {x: 188, y: -502, z: 643}
+  m_LocalPosition: {x: 188, y: -354, z: 561}
   m_LocalScale: {x: 174.18, y: 10.3, z: 21.54}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1102,7 +1102,7 @@ Transform:
   m_GameObject: {fileID: 1645642673}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.70710576, z: 0, w: 0.7071079}
-  m_LocalPosition: {x: 0, y: -272, z: 361}
+  m_LocalPosition: {x: 0, y: -124, z: 279}
   m_LocalScale: {x: 174.18, y: 10.3, z: 21.54}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1146,14 +1146,17 @@ MonoBehaviour:
   screenWidthSwipeDegrees: 180
   holdKeepsTurning: 0
   holdDelay: 0.025
+  verticalDragYawSuppressionStart: 0.4
+  verticalDragYawSuppressionEnd: 0.85
   enableVerticalGlideControl: 1
-  screenHeightSwipePitchDegrees: 200
+  screenHeightSwipePitchDegrees: 300
   maxPitchDegrees: 60
   pitchReturnsToNeutral: 0
   pitchReturnSpeed: 60
   pitchDownForwardSpeedBonus: 4
+  pitchUpForwardSpeedPenalty: 6
   maxPitchDownGravityIncrease: 0.5
-  maxPitchUpGravityReduction: 0.2
+  maxPitchUpGravityReduction: 2
   pitchToGravityCurve:
     serializedVersion: 2
     m_Curve:
@@ -1333,7 +1336,7 @@ Transform:
   m_GameObject: {fileID: 2053113525}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.86602455, z: -0, w: 0.5000016}
-  m_LocalPosition: {x: 42, y: -427, z: 544}
+  m_LocalPosition: {x: 42, y: -279, z: 462}
   m_LocalScale: {x: 174.18, y: 10.3, z: 21.54}
   m_ConstrainProportionsScale: 0
   m_Children: []

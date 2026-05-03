@@ -18,17 +18,19 @@ public class AirborneDragGlider : MonoBehaviour
     [SerializeField] private float screenWidthSwipeDegrees = 180f;
     [SerializeField] private bool holdKeepsTurning = false;
     [SerializeField] private float holdDelay = 0.025f;
+    [SerializeField] private float verticalDragYawSuppressionStart = 0.4f;
+    [SerializeField] private float verticalDragYawSuppressionEnd = 0.85f;
 
     [Header("Vertical Glide Control")]
     [SerializeField] private bool enableVerticalGlideControl = true;
-    [SerializeField] private float screenHeightSwipePitchDegrees = 200f;
+    [SerializeField] private float screenHeightSwipePitchDegrees = 300f;
     [SerializeField] private float maxPitchDegrees = 60f;
     [SerializeField] private bool pitchReturnsToNeutral = false;
     [SerializeField] private float pitchReturnSpeed = 60f;
     [SerializeField] private float pitchDownForwardSpeedBonus = 4f;
-    [SerializeField] private float pitchUpForwardSpeedPenalty = 4f;
+    [SerializeField] private float pitchUpForwardSpeedPenalty = 6f;
     [SerializeField] private float maxPitchDownGravityIncrease = 0.5f;
-    [SerializeField] private float maxPitchUpGravityReduction = 0.2f;
+    [SerializeField] private float maxPitchUpGravityReduction = 2f;
     // X axis: normalized pitch (0 = neutral, 1 = max pitch up/down). Y axis: gravity influence factor (0 = no change, 1 = full effect of maxPitchUpGravityReduction / maxPitchDownGravityIncrease).
     [SerializeField] private AnimationCurve pitchToGravityCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
@@ -157,7 +159,10 @@ public class AirborneDragGlider : MonoBehaviour
         {
             lastDeltaX = pointerDelta.x;
             timeSinceLastDragMovement = 0f;
-            currentYaw += pointerDelta.x * degreesPerPixel;
+            float verticalAmount = Mathf.Abs(pointerDelta.y) / (Mathf.Abs(pointerDelta.x) + Mathf.Abs(pointerDelta.y));
+            float yawMultiplier = 1f - Mathf.InverseLerp(verticalDragYawSuppressionStart, verticalDragYawSuppressionEnd, verticalAmount);
+
+            currentYaw += pointerDelta.x * degreesPerPixel * yawMultiplier;
         }
         else
         {
